@@ -41,7 +41,6 @@
 
 #include "util.h"
 
-/* Glob-style pattern matching. */
 int stringmatchlen(const char *pattern, int patternLen,
         const char *string, int stringLen, int nocase)
 {
@@ -55,20 +54,74 @@ int stringmatchlen(const char *pattern, int patternLen,
             if (patternLen == 1)
                 return 1; /* match */
             while(stringLen) {
-                if (stringmatchlen(pattern+1, patternLen-1,
-                            string, stringLen, nocase))
-                    return 1; /* match */
+                if (stringmatchlen(pattern+1, patternLen-1, string, stringLen, nocase)) {
+                    return 1;
+                }
                 string++;
                 stringLen--;
             }
             return 0; /* no match */
+            
             break;
         case '?':
             if (stringLen == 0)
                 return 0; /* no match */
             string++;
             stringLen--;
+            break;        
+        case '{':
+        {
+            pattern++;
+            patternLen--;
+            
+            int match = -1;
+            int matchFound = 0;
+            int posMoved = 0;
+            while (1) {
+                if (pattern[0] == ',' || pattern[0] == '}') { // reset pointer to begin of string 
+                    if (matchFound == 1 || match == 1) {
+                        matchFound = 1;
+                    }
+                    if (pattern[0] == '}') {
+                        break;
+                    }
+                    match = -1;
+                    pattern++;
+                    patternLen--;
+                    string = string - posMoved;
+                    stringLen = stringLen + posMoved;
+                    posMoved = 0;
+                    continue;
+                } else if (patternLen == 0) {
+                    pattern--;
+                    patternLen++;
+                    break;
+                }
+                posMoved++;
+                if (matchFound == 0 && (match == -1 || match == 1)) {
+                    if (!nocase) {
+                        if (pattern[0] == string[0]) {
+                            match = 1;
+                        } else {
+                            match = -1;
+                        }
+                    } else {
+                        if (tolower((int)pattern[0]) == tolower((int)string[0])) {
+                            match = 1;
+                        } else {
+                            match = -1;
+                        }
+                    }
+                }
+                pattern++;
+                patternLen--;
+                string++;
+                stringLen--;
+            }
+            if (!matchFound)
+                return 0; /* no match */
             break;
+        }
         case '[':
         {
             int not, match;
