@@ -103,13 +103,13 @@ int stringmatchlen(const char *pattern, int patternLen,
                         if (pattern[0] == string[0]) {
                             match = 1;
                         } else {
-                            match = -1;
+                            match = 0;
                         }
                     } else {
                         if (tolower((int)pattern[0]) == tolower((int)string[0])) {
                             match = 1;
                         } else {
-                            match = -1;
+                            match = 0;
                         }
                     }
                 }
